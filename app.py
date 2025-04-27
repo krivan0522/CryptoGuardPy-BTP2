@@ -3,7 +3,7 @@ import os
 import json
 from cryptoguardpy import CryptoGuardAnalyzer
 import tempfile
-import shutil
+import time
 from pathlib import Path
 
 # Page config
@@ -202,10 +202,12 @@ def main():
         if uploaded_files:
             with tempfile.TemporaryDirectory() as temp_dir:
                 saved_files = save_uploaded_files(uploaded_files, temp_dir)
-                st.write(f"Analyzing {len(saved_files)} files...")
-                
+                placeholder = st.empty()
+                placeholder.write(f"Analyzing {len(saved_files)} files...")
                 results = analyze_directory(temp_dir)
                 if results:
+                    time.sleep(2)
+                    placeholder.empty()
                     st.write("### Analysis Results")
                     for file_result in results:
                         with st.expander(f"📄 {file_result['file']}"):
@@ -216,6 +218,7 @@ def main():
                                     f"- Severity: {vuln.get('severity', 'medium')}"
                                 )
                 else:
+                    placeholder.empty()
                     st.success("No vulnerabilities found in any files!")
     
     else:  # Directory upload
@@ -224,10 +227,11 @@ def main():
         
         if dir_path:
             if os.path.isdir(dir_path):
-                st.write(f"Analyzing directory: {dir_path}")
+                placeholder = st.empty()
+                placeholder.write(f"Analyzing directory: {dir_path}")
                 results = analyze_directory(dir_path)
-                
                 if results:
+                    placeholder.empty()
                     st.write("### Analysis Results")
                     # Add download button for JSON report
                     json_report = json.dumps(results, indent=2)
@@ -262,6 +266,7 @@ def main():
                             percentage = (vulnerable_files / total_files) * 100
                             st.metric("Percentage Vulnerable", f"{percentage:.1f}%")
                 else:
+                    placeholder.empty()
                     st.success("No vulnerabilities found in any files!")
             else:
                 st.error("Invalid directory path. Please provide a valid directory path.")
